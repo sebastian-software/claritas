@@ -620,6 +620,15 @@ impl Readability {
         html = self.remove_elements_by_tag(&html, "aside");
         html = self.remove_elements_by_tag(&html, "form");
         html = self.remove_elements_by_tag(&html, "noscript");
+        html = self.remove_elements_by_tag(&html, "iframe");
+        html = self.remove_elements_by_tag(&html, "button");
+        html = self.remove_elements_by_tag(&html, "input");
+        html = self.remove_elements_by_tag(&html, "textarea");
+        html = self.remove_elements_by_tag(&html, "select");
+        html = self.remove_elements_by_tag(&html, "svg");
+
+        // Remove the first h1 (usually duplicate of title)
+        html = self.remove_first_h1(&html);
 
         // Fix relative URLs if we have a base URL
         if let Some(base_url) = &self.url {
@@ -628,6 +637,12 @@ impl Readability {
 
         // Wrap in a div with readability class
         format!("<div id=\"readability-page-1\" class=\"page\">{}</div>", html.trim())
+    }
+
+    /// Remove the first h1 element (usually duplicate of article title)
+    fn remove_first_h1(&self, html: &str) -> String {
+        let re = regex::Regex::new(r"(?is)<h1[^>]*>.*?</h1>").unwrap();
+        re.replacen(html, 1, "").to_string()
     }
 
     /// Remove elements by tag name (simple regex-based approach)
