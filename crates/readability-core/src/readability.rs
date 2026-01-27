@@ -630,6 +630,12 @@ impl Readability {
         // Remove the first h1 (usually duplicate of title)
         html = self.remove_first_h1(&html);
 
+        // Remove junk elements based on class/id patterns
+        html = self.remove_junk_elements(&html);
+
+        // Clean up empty elements
+        html = self.clean_empty_elements(&html);
+
         // Fix relative URLs if we have a base URL
         if let Some(base_url) = &self.url {
             html = self.fix_relative_urls(&html, base_url);
@@ -643,6 +649,48 @@ impl Readability {
     fn remove_first_h1(&self, html: &str) -> String {
         let re = regex::Regex::new(r"(?is)<h1[^>]*>.*?</h1>").unwrap();
         re.replacen(html, 1, "").to_string()
+    }
+
+    /// Remove elements that are likely junk based on class/id patterns
+    fn remove_junk_elements(&self, html: &str) -> String {
+        // Remove divs with common junk class patterns
+        let junk_patterns = [
+            r"(?is)<div[^>]*class=[^>]*(comment|share|social|sidebar|related|promo|ad-|advertisement|sponsor|widget)[^>]*>.*?</div>",
+            r"(?is)<div[^>]*id=[^>]*(comment|share|social|sidebar|related|promo|ad-|advertisement|sponsor|widget)[^>]*>.*?</div>",
+            r"(?is)<aside[^>]*>.*?</aside>",
+            r"(?is)<figure[^>]*class=[^>]*(sidebar|related)[^>]*>.*?</figure>",
+        ];
+
+        let mut result = html.to_string();
+        for pattern in &junk_patterns {
+            if let Ok(re) = regex::Regex::new(pattern) {
+                result = re.replace_all(&result, "").to_string();
+            }
+        }
+        result
+    }
+
+    /// Clean up empty elements and excessive whitespace
+    fn clean_empty_elements(&self, html: &str) -> String {
+        // Remove empty paragraphs, divs, spans
+        let empty_patterns = [
+            r"(?is)<p[^>]*>\s*</p>",
+            r"(?is)<div[^>]*>\s*</div>",
+            r"(?is)<span[^>]*>\s*</span>",
+        ];
+
+        let mut result = html.to_string();
+        for pattern in &empty_patterns {
+            if let Ok(re) = regex::Regex::new(pattern) {
+                result = re.replace_all(&result, "").to_string();
+            }
+        }
+
+        // Collapse multiple newlines/spaces
+        let whitespace_re = regex::Regex::new(r"\n\s*\n\s*\n").unwrap();
+        result = whitespace_re.replace_all(&result, "\n\n").to_string();
+
+        result
     }
 
     /// Remove elements by tag name (simple regex-based approach)
