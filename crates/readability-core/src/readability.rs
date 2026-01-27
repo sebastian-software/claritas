@@ -607,9 +607,55 @@ impl Readability {
 
     /// Post-process the article content
     fn post_process_content(&self, element: &Element) -> String {
+        let mut html = element.inner_html();
+
+        // Remove unwanted elements via regex
+        // This is a simple approach - a proper implementation would use DOM manipulation
+        html = self.remove_elements_by_tag(&html, "script");
+        html = self.remove_elements_by_tag(&html, "style");
+        html = self.remove_elements_by_tag(&html, "link");
+        html = self.remove_elements_by_tag(&html, "header");
+        html = self.remove_elements_by_tag(&html, "footer");
+        html = self.remove_elements_by_tag(&html, "nav");
+        html = self.remove_elements_by_tag(&html, "aside");
+        html = self.remove_elements_by_tag(&html, "form");
+        html = self.remove_elements_by_tag(&html, "noscript");
+
+        // Fix relative URLs if we have a base URL
+        if let Some(base_url) = &self.url {
+            html = self.fix_relative_urls(&html, base_url);
+        }
+
         // Wrap in a div with readability class
-        let inner = element.inner_html();
-        format!("<div id=\"readability-page-1\" class=\"page\">{}</div>", inner.trim())
+        format!("<div id=\"readability-page-1\" class=\"page\">{}</div>", html.trim())
+    }
+
+    /// Remove elements by tag name (simple regex-based approach)
+    fn remove_elements_by_tag(&self, html: &str, tag: &str) -> String {
+        // Match self-closing tags like <link .../>
+        let self_closing = regex::Regex::new(&format!(r"(?is)<{}\s[^>]*/?>", tag)).unwrap();
+        let result = self_closing.replace_all(html, "");
+
+        // Match opening and closing tags with content
+        let with_content = regex::Regex::new(&format!(r"(?is)<{}\s*[^>]*>.*?</{}>", tag, tag)).unwrap();
+        with_content.replace_all(&result, "").to_string()
+    }
+
+    /// Fix relative URLs to absolute
+    fn fix_relative_urls(&self, html: &str, base_url: &str) -> String {
+        let base = base_url.trim_end_matches('/');
+
+        // Fix href attributes
+        let href_re = regex::Regex::new(r#"href="(/[^"]*)""#).unwrap();
+        let result = href_re.replace_all(html, |caps: &regex::Captures| {
+            format!("href=\"{}{}\"", base, &caps[1])
+        });
+
+        // Fix src attributes
+        let src_re = regex::Regex::new(r#"src="(/[^"]*)""#).unwrap();
+        src_re.replace_all(&result, |caps: &regex::Captures| {
+            format!("src=\"{}{}\"", base, &caps[1])
+        }).to_string()
     }
 }
 
