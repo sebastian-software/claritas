@@ -1,0 +1,18 @@
+[package]
+name = "bindings-napi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Node.js bindings for Claritas via napi-rs"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+readability-core = { path = "../readability-core" }
+defuddle-core = { path = "../defuddle-core" }
+napi = { version = "2", features = ["napi4"] }
+napi-derive = "2"
+
+[build-dependencies]
+napi-build = "2"

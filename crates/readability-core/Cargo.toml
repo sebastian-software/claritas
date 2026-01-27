@@ -1,0 +1,16 @@
+[package]
+name = "readability-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Rust port of Mozilla Readability - extracts readable content from web pages"
+
+[dependencies]
+dom-shim = { path = "../dom-shim" }
+thiserror.workspace = true
+regex.workspace = true
+lazy_static.workspace = true
+url.workspace = true
+log.workspace = true
+
+[dev-dependencies]

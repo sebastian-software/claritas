@@ -1,0 +1,15 @@
+[package]
+name = "defuddle-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Rust port of Defuddle - enhanced content extraction"
+
+[dependencies]
+dom-shim = { path = "../dom-shim" }
+readability-core = { path = "../readability-core" }
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]

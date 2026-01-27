@@ -1,0 +1,13 @@
+[package]
+name = "dom-shim"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "DOM shim for Readability port - provides Document/Element API over html5ever"
+
+[dependencies]
+scraper.workspace = true
+ego-tree.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
