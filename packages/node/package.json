@@ -9,12 +9,14 @@
     "*.node"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "export PATH=\"$HOME/.cargo/bin:$PATH\" && napi build --platform --release --cargo-cwd ../../crates/bindings-napi && tsc",
+    "build:debug": "export PATH=\"$HOME/.cargo/bin:$PATH\" && napi build --platform --cargo-cwd ../../crates/bindings-napi && tsc",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint src/"
+    "lint": "eslint src/ --ext .ts"
   },
   "devDependencies": {
+    "@napi-rs/cli": "^2.18",
     "@types/node": "^22",
     "vitest": "^3"
   },

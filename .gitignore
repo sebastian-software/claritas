@@ -13,6 +13,10 @@ node_modules/
 dist/
 *.tsbuildinfo
 
+# napi-rs generated files (we use our own TypeScript wrapper)
+packages/node/index.js
+packages/node/index.d.ts
+
 # IDE
 .idea/
 .vscode/
