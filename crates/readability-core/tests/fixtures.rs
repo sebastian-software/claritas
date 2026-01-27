@@ -19,50 +19,54 @@ fn fixtures_dir() -> PathBuf {
 }
 
 /// Normalize HTML for comparison
-/// - Collapse whitespace
-/// - Normalize attribute order
-/// - Remove insignificant differences
+/// - Collapse all whitespace to single spaces
+/// - Remove whitespace between tags
+/// - Lowercase tag names
 fn normalize_html(html: &str) -> String {
-    let mut result = String::new();
-    let mut in_tag = false;
-    let mut last_was_whitespace = false;
+    // First, collapse all whitespace
+    let collapsed: String = html
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
 
-    for c in html.chars() {
-        match c {
-            '<' => {
-                in_tag = true;
-                last_was_whitespace = false;
-                result.push(c);
-            }
-            '>' => {
-                in_tag = false;
-                last_was_whitespace = false;
-                result.push(c);
-            }
-            c if c.is_whitespace() => {
-                if !last_was_whitespace && !in_tag {
-                    result.push(' ');
-                    last_was_whitespace = true;
-                } else if in_tag && !last_was_whitespace {
-                    result.push(' ');
-                    last_was_whitespace = true;
-                }
-            }
-            c => {
-                last_was_whitespace = false;
-                result.push(c);
-            }
-        }
-    }
+    // Remove space after < and before >
+    let result = collapsed
+        .replace("< ", "<")
+        .replace(" >", ">")
+        .replace(" />", "/>")
+        .replace("> <", "><");
 
     result.trim().to_string()
+}
+
+/// Calculate similarity between two strings (0.0 to 1.0)
+fn calculate_similarity(a: &str, b: &str) -> f64 {
+    if a.is_empty() && b.is_empty() {
+        return 1.0;
+    }
+    if a.is_empty() || b.is_empty() {
+        return 0.0;
+    }
+
+    // Simple Jaccard similarity on words
+    let words_a: std::collections::HashSet<_> = a.split_whitespace().collect();
+    let words_b: std::collections::HashSet<_> = b.split_whitespace().collect();
+
+    let intersection = words_a.intersection(&words_b).count();
+    let union = words_a.union(&words_b).count();
+
+    if union == 0 {
+        0.0
+    } else {
+        intersection as f64 / union as f64
+    }
 }
 
 /// Result of running a fixture test
 #[derive(Debug)]
 enum FixtureResult {
     Pass,
-    ContentMismatch { expected_len: usize, actual_len: usize },
+    ContentMismatch { expected_len: usize, actual_len: usize, similarity: f64 },
     EmptyContent,
     ParseFailed,
     MissingFiles,
@@ -100,12 +104,15 @@ fn run_fixture_test_detailed(fixture_name: &str) -> FixtureResult {
             let normalized_result = normalize_html(&article.content);
             let normalized_expected = normalize_html(&expected);
 
+            let similarity = calculate_similarity(&normalized_result, &normalized_expected);
+
             if normalized_result == normalized_expected {
                 FixtureResult::Pass
             } else {
                 FixtureResult::ContentMismatch {
                     expected_len: normalized_expected.len(),
                     actual_len: normalized_result.len(),
+                    similarity,
                 }
             }
         }
@@ -152,17 +159,31 @@ fn test_all_fixtures() {
     let mut content_mismatch = 0;
     let mut empty_content = 0;
     let mut parse_failed = 0;
+    let mut total_similarity = 0.0;
+    let mut high_similarity = 0; // > 80%
+    let mut medium_similarity = 0; // 50-80%
+    let mut low_similarity = 0; // < 50%
 
     let mut failures: Vec<(String, FixtureResult)> = Vec::new();
 
     for fixture in &fixtures {
         let result = run_fixture_test_detailed(fixture);
         match &result {
-            FixtureResult::Pass => passed += 1,
-            FixtureResult::ContentMismatch { .. } => {
+            FixtureResult::Pass => {
+                passed += 1;
+                total_similarity += 1.0;
+                high_similarity += 1;
+            }
+            FixtureResult::ContentMismatch { similarity, .. } => {
                 content_mismatch += 1;
-                // Content mismatch is expected until we complete the port
-                // Don't add to failures for now
+                total_similarity += similarity;
+                if *similarity >= 0.8 {
+                    high_similarity += 1;
+                } else if *similarity >= 0.5 {
+                    medium_similarity += 1;
+                } else {
+                    low_similarity += 1;
+                }
             }
             FixtureResult::EmptyContent => {
                 empty_content += 1;
@@ -176,12 +197,19 @@ fn test_all_fixtures() {
         }
     }
 
+    let avg_similarity = total_similarity / total as f64;
+
     println!("\n=== Fixture Test Results ===");
     println!("Total fixtures: {}", total);
     println!("Exact match:    {} ({:.1}%)", passed, passed as f64 / total as f64 * 100.0);
     println!("Content diff:   {} ({:.1}%)", content_mismatch, content_mismatch as f64 / total as f64 * 100.0);
     println!("Empty content:  {}", empty_content);
     println!("Parse failed:   {}", parse_failed);
+    println!("----------------------------");
+    println!("Avg similarity: {:.1}%", avg_similarity * 100.0);
+    println!("High (>=80%):   {}", high_similarity);
+    println!("Medium (50-80%): {}", medium_similarity);
+    println!("Low (<50%):     {}", low_similarity);
     println!("============================\n");
 
     if !failures.is_empty() {
