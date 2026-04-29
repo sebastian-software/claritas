@@ -12,7 +12,7 @@ crate-type = ["cdylib"]
 readability-core = { path = "../readability-core" }
 defuddle-core = { path = "../defuddle-core" }
 napi = { version = "2", features = ["napi4"] }
-napi-derive = "2"
+napi-derive = "3"
 
 [build-dependencies]
 napi-build = "2"
