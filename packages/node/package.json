@@ -15,8 +15,8 @@
     "lint": "eslint src/"
   },
   "devDependencies": {
-    "@types/node": "^22",
-    "vitest": "^3"
+    "@types/node": "^25",
+    "vitest": "^4"
   },
   "napi": {
     "name": "claritas",
