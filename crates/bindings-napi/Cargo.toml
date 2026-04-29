@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 [dependencies]
 readability-core = { path = "../readability-core" }
 defuddle-core = { path = "../defuddle-core" }
-napi = { version = "2", features = ["napi4"] }
+napi = { version = "3", features = ["napi4"] }
 napi-derive = "2"
 
 [build-dependencies]
