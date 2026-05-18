@@ -13,7 +13,7 @@ edition = "2021"
 license = "MIT AND Apache-2.0"
 
 [workspace.dependencies]
-scraper = "0.22"
+scraper = "0.27"
 ego-tree = "0.10"
 thiserror = "2"
 serde = { version = "1", features = ["derive"] }
