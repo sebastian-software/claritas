@@ -24,18 +24,18 @@
   },
   "homepage": "https://github.com/mozilla/readability",
   "devDependencies": {
-    "@release-it/keep-a-changelog": "7.0.0",
-    "chai": "4.3.7",
-    "eslint": "8.57.0",
-    "eslint-plugin-mozilla": "^3.7.4",
+    "@release-it/keep-a-changelog": "7.0.1",
+    "chai": "6.2.2",
+    "eslint": "10.4.0",
+    "eslint-plugin-mozilla": "^4.4.0",
     "eslint-plugin-no-unsanitized": "^4.0.2",
-    "htmltidy2": "1.0.0",
-    "js-beautify": "1.14.7",
-    "jsdom": "20.0.2",
-    "mocha": "10.8.2",
+    "htmltidy2": "1.2.0",
+    "js-beautify": "1.15.4",
+    "jsdom": "29.1.1",
+    "mocha": "11.7.6",
     "prettier": "^3.3.2",
-    "release-it": "19.0.4",
-    "sinon": "14.0.2",
+    "release-it": "20.0.1",
+    "sinon": "22.0.0",
     "xml-name-validator": "^5.0.0"
   }
 }
