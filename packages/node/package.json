@@ -16,8 +16,8 @@
     "lint": "eslint src/ --ext .ts"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^2.18",
-    "@types/node": "^22",
+    "@napi-rs/cli": "^3.7",
+    "@types/node": "^25",
     "vitest": "^3"
   },
   "napi": {
